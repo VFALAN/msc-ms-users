@@ -12,6 +12,8 @@ import com.msc.ms.users.user.error.AlreadyExistingUsernameException;
 import com.msc.ms.users.user.model.UserEntity;
 import com.msc.ms.users.user.model.UserRequestDTO;
 import com.msc.ms.users.user.model.UserResponseDTO;
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -21,11 +23,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Timed
 public class UserService {
+    private final static boolean IS_ACTIVE = true;
     private final UserRepository userRepository;
     private final AddressService addressService;
     private final ProfileService profileService;
@@ -35,7 +40,10 @@ public class UserService {
     private final ILogPassRepository iLogPassRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Counted(value = "user.created", description = "Creation of a new User")
+    @Timed(value = "time.user.created", description = "time taken for the user creation")
     public UserResponseDTO createUser(UserRequestDTO pUserRequestDTO) throws Exception {
+
         if (this.validUsername(pUserRequestDTO.getUserName())) {
             final var mLocation = this.getLocation(pUserRequestDTO.getIdLocation());
             final var mProfileentity = profileService.findById(pUserRequestDTO.getIdProfile());
@@ -73,15 +81,22 @@ public class UserService {
         }
     }
 
-    private boolean validUsername(String username) {
+
+    public List<UserResponseDTO> list() {
+        return this.userRepository.findAll().stream().map(i -> this.modelMapper.map(i, UserResponseDTO.class)).toList();
+    }
+
+    public boolean validUsername(String username) {
         final var totalUsers = userRepository.searchUsername(username);
         return totalUsers == 0;
     }
 
-    private static Date estimatePasswordExpiration(Date date) {
-        final var calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.MONTH, 3);
-        return calendar.getTime();
+    public boolean validEmail(String pEmailStr) {
+        final var emailUsers = userRepository.findAllByEmailAndActive(pEmailStr, IS_ACTIVE);
+        return emailUsers.isEmpty();
+    }
+
+    public boolean validPhoneNumber(String pPhoneNumber) {
+        return userRepository.findAllByPhoneNumberAndActive(pPhoneNumber, IS_ACTIVE).isEmpty();
     }
 }

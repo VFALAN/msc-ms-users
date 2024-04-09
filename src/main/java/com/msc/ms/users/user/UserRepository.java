@@ -9,9 +9,15 @@ import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     @Procedure("search_username")
     Integer searchUsername(@Param("username") String pUsername);
+
+    List<UserEntity> findAllByEmailAndActive(String pEmail, boolean isActive);
+
+    List<UserEntity> findAllByPhoneNumberAndActive(String pPhoneNumber, boolean isActive);
 }
