@@ -20,9 +20,10 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
-                        authorizationManagerRequestMatcherRegistry.requestMatchers(
-                                        "/actuator","/actuator/**")
+                        authorizationManagerRequestMatcherRegistry
+                                .requestMatchers("/actuator","/actuator/**")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()

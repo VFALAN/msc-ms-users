@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Timed
 public class UserService {
-    private final static boolean IS_ACTIVE = true;
+    private static final boolean IS_ACTIVE = true;
     private final UserRepository userRepository;
     private final AddressService addressService;
     private final ProfileService profileService;
@@ -44,29 +44,27 @@ public class UserService {
     @Timed(value = "time.user.created", description = "time taken for the user creation")
     public UserResponseDTO createUser(UserRequestDTO pUserRequestDTO) throws Exception {
 
-        if (this.validUsername(pUserRequestDTO.getUserName())) {
-            final var mLocation = this.getLocation(pUserRequestDTO.getIdLocation());
-            final var mProfileentity = profileService.findById(pUserRequestDTO.getIdProfile());
-            final var address = modelMapper.map(pUserRequestDTO, AddressEntity.class);
-            address.setIdLocation(mLocation.getIdLocality());
-            var user = modelMapper.map(pUserRequestDTO, UserEntity.class);
-            user.setAddress(address);
-            user.setProfile(mProfileentity);
-            user.setActive(true);
-            user.setDateCreate(new Date());
-            user = this.userRepository.save(user);
-            log.info("user created with id: {}", user.getIdUser());
-            final var password = iAuthenticationService.getPassword(10);
-            final var mPassLog = LogPassEntity.builder()
-                    .idUser(user)
-                    .password(passwordEncoder.encode(password.getBody()))
-                    .build();
-            iLogPassRepository.save(mPassLog);
-            log.info("with Password for {} : {} ", user.getUserName(), password.getBody());
-            return modelMapper.map(user, UserResponseDTO.class);
-        } else {
-            throw new AlreadyExistingUsernameException(pUserRequestDTO.getUserName());
-        }
+
+        final var mLocation = this.getLocation(pUserRequestDTO.getIdLocation());
+        final var mProfileentity = profileService.findById(pUserRequestDTO.getIdProfile());
+        final var address = modelMapper.map(pUserRequestDTO, AddressEntity.class);
+        address.setIdLocation(mLocation.getIdLocality());
+        var user = modelMapper.map(pUserRequestDTO, UserEntity.class);
+        user.setAddress(address);
+        user.setProfile(mProfileentity);
+        user.setActive(true);
+        user.setDateCreate(new Date());
+        user = this.userRepository.save(user);
+        log.info("user created with id: {}", user.getIdUser());
+        final var password = iAuthenticationService.getPassword(10);
+        final var mPassLog = LogPassEntity.builder()
+                .idUser(user)
+                .password(passwordEncoder.encode(password.getBody()))
+                .build();
+        iLogPassRepository.save(mPassLog);
+        log.info("with Password for {} : {} ", user.getUserName(), password.getBody());
+        return modelMapper.map(user, UserResponseDTO.class);
+
 
     }
 
