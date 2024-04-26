@@ -16,14 +16,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
 @Service
-@Slf4j
 public class JwtService {
     @Value("${msc.security.secret-key}")
     private String SECRET_KEY;
 
 
     public String getToken(Map<String, String> extraClaims, UserDetails userDetails) {
-        log.info(this.SECRET_KEY);
+
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())

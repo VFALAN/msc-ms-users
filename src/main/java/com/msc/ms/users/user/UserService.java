@@ -8,6 +8,7 @@ import com.msc.ms.users.location.LocationResponse;
 import com.msc.ms.users.passlogs.ILogPassRepository;
 import com.msc.ms.users.passlogs.LogPassEntity;
 import com.msc.ms.users.profile.ProfileService;
+import com.msc.ms.users.security.HeaderService;
 import com.msc.ms.users.user.error.AlreadyExistingUsernameException;
 import com.msc.ms.users.user.model.UserEntity;
 import com.msc.ms.users.user.model.UserRequestDTO;
@@ -17,6 +18,7 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Timed
+@Timed("users")
 public class UserService {
     private static final boolean IS_ACTIVE = true;
     private final UserRepository userRepository;
@@ -39,6 +41,8 @@ public class UserService {
     private final IAuthenticationService iAuthenticationService;
     private final ILogPassRepository iLogPassRepository;
     private final PasswordEncoder passwordEncoder;
+    @Value("${msc.security.own.key}")
+    private String KEY;
 
     @Counted(value = "user.created", description = "Creation of a new User")
     @Timed(value = "time.user.created", description = "time taken for the user creation")
