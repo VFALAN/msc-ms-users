@@ -5,11 +5,10 @@ import com.msc.ms.users.address.AddressService;
 import com.msc.ms.users.authentication.IAuthenticationService;
 import com.msc.ms.users.location.ILocationService;
 import com.msc.ms.users.location.LocationResponse;
+import com.msc.ms.users.minio.IMinioService;
 import com.msc.ms.users.passlogs.ILogPassRepository;
 import com.msc.ms.users.passlogs.LogPassEntity;
 import com.msc.ms.users.profile.ProfileService;
-import com.msc.ms.users.security.HeaderService;
-import com.msc.ms.users.user.error.AlreadyExistingUsernameException;
 import com.msc.ms.users.user.model.UserEntity;
 import com.msc.ms.users.user.model.UserRequestDTO;
 import com.msc.ms.users.user.model.UserResponseDTO;
@@ -23,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -41,11 +39,12 @@ public class UserService {
     private final IAuthenticationService iAuthenticationService;
     private final ILogPassRepository iLogPassRepository;
     private final PasswordEncoder passwordEncoder;
+    private final IMinioService iMinioService;
     @Value("${msc.security.own.key}")
     private String KEY;
 
     @Counted(value = "user.created", description = "Creation of a new User")
-    @Timed(value = "time.user.created", description = "time taken for the user creation")
+    @Timed(value = "user.created", description = "time taken for the user creation")
     public UserResponseDTO createUser(UserRequestDTO pUserRequestDTO) throws Exception {
 
 
@@ -67,11 +66,21 @@ public class UserService {
                 .build();
         iLogPassRepository.save(mPassLog);
         log.info("with Password for {} : {} ", user.getUserName(), password.getBody());
+        asingDefaultImageForUser(user.getIdUser());
         return modelMapper.map(user, UserResponseDTO.class);
 
 
     }
 
+    @Timed("user.creation.image.linked")
+    private void asingDefaultImageForUser(Integer idUser) {
+        final var response = iMinioService.defaultImage(idUser);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            log.info("default profile image linked at user: {}", idUser);
+        } else {
+            log.error("something went wrong during the process for the user {}", idUser);
+        }
+    }
 
     private LocationResponse getLocation(Integer idLocation) throws Exception {
         final var response = iLocationService.getLocation(idLocation);

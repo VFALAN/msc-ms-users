@@ -24,8 +24,7 @@ public class UserController {
         final var response = userService.createUser(pUserRequestDTO);
         return ResponseEntity.ok(response);
     }
-    @Counted(value = "count.user.listed", description = "list of users")
-    @Timed(value = "time.user.listed", description = "time taken for list of users")
+
     @GetMapping
     ResponseEntity<List<UserResponseDTO>> list() {
         return ResponseEntity.ok(userService.list());

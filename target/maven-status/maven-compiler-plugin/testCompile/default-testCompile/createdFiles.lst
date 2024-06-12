@@ -1,0 +1,4 @@
+com\msc\ms\users\MscMsUsersApplicationTests.class
+com\msc\ms\users\locality\LocalityRemoteTest.class
+com\msc\ms\users\user\UserServiceTest.class
+com\msc\ms\users\authentication\AuthenticationRemoteServiceTest.class

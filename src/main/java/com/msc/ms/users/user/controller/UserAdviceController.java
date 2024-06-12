@@ -1,7 +1,6 @@
 package com.msc.ms.users.user.controller;
 
 import com.msc.ms.users.common.model.dto.ErrorResponse;
-import feign.FeignException;
 import io.micrometer.core.annotation.Counted;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @ControllerAdvice(assignableTypes = UserController.class)
 public class UserAdviceController {
-    @Counted("user.creation.error")
+    @Counted(value = "users.error.validation", description = "error in users process")
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handlerValidExceptions(MethodArgumentNotValidException pException) {
         final var response = ErrorResponse.builder().message("Error in validation of User creation").errors(
