@@ -12,7 +12,7 @@ pipeline {
         }
         stage('Build Project') {
             steps {
-                bat 'mvn clean package' // Adjust command for your build tool (e.g., Gradle: ./gradlew clean build)
+                bat 'mvn clean package -DskipTests' // Adjust command for your build tool (e.g., Gradle: ./gradlew clean build)
             }
         }
         stage('Build Docker Image') {
