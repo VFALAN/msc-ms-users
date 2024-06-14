@@ -19,7 +19,7 @@
         <format>
             <!-- (2) -->
             <label>
-                <pattern>app=${name},host=${HOSTNAME},level=%level</pattern>
+                <pattern>app=${spring.application.name},host=${HOSTNAME},level=%level</pattern>
                 <!-- (3) -->
                 <readMarkers>true</readMarkers>
             </label>
