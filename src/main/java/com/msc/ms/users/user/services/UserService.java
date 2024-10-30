@@ -1,4 +1,4 @@
-package com.msc.ms.users.user;
+package com.msc.ms.users.user.services;
 
 import com.msc.ms.users.address.AddressEntity;
 import com.msc.ms.users.address.AddressService;
@@ -9,14 +9,18 @@ import com.msc.ms.users.minio.IMinioService;
 import com.msc.ms.users.passlogs.ILogPassRepository;
 import com.msc.ms.users.passlogs.LogPassEntity;
 import com.msc.ms.users.profile.ProfileService;
+import com.msc.ms.users.user.UserRepository;
 import com.msc.ms.users.user.model.UserEntity;
-import com.msc.ms.users.user.model.UserRequestDTO;
-import com.msc.ms.users.user.model.UserResponseDTO;
+import com.msc.ms.users.user.model.request.UserRegistryRequest;
+import com.msc.ms.users.user.model.request.UserRequestDTO;
+import com.msc.ms.users.user.model.response.UserRegistryResponse;
+import com.msc.ms.users.user.model.response.UserResponseDTO;
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,12 +31,34 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 @Timed("users")
 public class UserService {
+
+    public UserService(
+            final UserRepository pUserRepository,
+            final ProfileService pProfileService,
+            final ILocationService pILocationService,
+            final ModelMapper pModelMapper,
+            final IAuthenticationService pIAuthenticationService,
+            final ILogPassRepository pILogPassRepository,
+            final PasswordEncoder pPasswordEncoder,
+            final IMinioService pIMinioService,
+            @Value("${msc.security.own.key}") final String pKEY
+    ) {
+        userRepository = pUserRepository;
+        profileService = pProfileService;
+        iLocationService = pILocationService;
+        modelMapper = pModelMapper;
+        iAuthenticationService = pIAuthenticationService;
+        iLogPassRepository = pILogPassRepository;
+        passwordEncoder = pPasswordEncoder;
+        iMinioService = pIMinioService;
+
+    }
+
     private static final boolean IS_ACTIVE = true;
     private final UserRepository userRepository;
-    private final AddressService addressService;
+
     private final ProfileService profileService;
     private final ILocationService iLocationService;
     private final ModelMapper modelMapper;
@@ -41,8 +67,21 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final IMinioService iMinioService;
     @Value("${msc.security.own.key}")
-    private String KEY;
+    private static String KEY;
 
+    @Counted(value = "user.registry")
+    @Timed(value = "user.registry")
+    public UserRegistryResponse userRegistry(UserRegistryRequest pRequest) {
+        final var entity = modelMapper.map(pRequest, UserEntity.class);
+        entity.setActive(IS_ACTIVE);
+        entity.setDateCreate(new Date());
+        final var savedEntity = userRepository.save(entity);
+        return modelMapper.map(savedEntity, UserRegistryResponse.class);
+    }
+
+    //! TODO remove unefficent method
+
+    /// @deprecated
     @Counted(value = "user.created", description = "Creation of a new User")
     @Timed(value = "user.created", description = "time taken for the user creation")
     public UserResponseDTO createUser(UserRequestDTO pUserRequestDTO) throws Exception {
@@ -66,14 +105,16 @@ public class UserService {
                 .build();
         iLogPassRepository.save(mPassLog);
         log.info("with Password for {} : {} ", user.getUserName(), password.getBody());
-        asingDefaultImageForUser(user.getIdUser());
+        usingDefaultImageForUser(user.getIdUser());
         return modelMapper.map(user, UserResponseDTO.class);
 
 
     }
 
+    //!TODO remove function no needed at this point
+
     @Timed("user.creation.image.linked")
-    private void asingDefaultImageForUser(Integer idUser) {
+    private void usingDefaultImageForUser(Integer idUser) {
         final var response = iMinioService.defaultImage(idUser);
         if (response.getStatusCode() == HttpStatus.OK) {
             log.info("default profile image linked at user: {}", idUser);
@@ -99,7 +140,8 @@ public class UserService {
 
     public boolean validUsername(String username) {
         final var totalUsers = userRepository.searchUsername(username);
-        return totalUsers == 0;
+
+        return !(totalUsers > 0);
     }
 
     public boolean validEmail(String pEmailStr) {

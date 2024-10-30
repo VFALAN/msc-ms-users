@@ -1,6 +1,6 @@
 package com.msc.ms.users.user.controller;
 
-import com.msc.ms.users.common.model.dto.ErrorResponse;
+import com.msc.ms.users.common.model.reponse.ErrorResponse;
 import io.micrometer.core.annotation.Counted;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;

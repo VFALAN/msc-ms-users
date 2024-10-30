@@ -19,7 +19,6 @@ public class AddressEntity extends AuditEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_ADDRESS")
     private Integer idAddress;
-
     @Column(name = "STREET")
     private String street;
     @Column(name = "DESCRIPTION")

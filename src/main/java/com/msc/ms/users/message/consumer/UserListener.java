@@ -1,7 +1,7 @@
 package com.msc.ms.users.message.consumer;
 
-import com.msc.ms.users.user.UserService;
-import com.msc.ms.users.user.model.UserRequestDTO;
+import com.msc.ms.users.user.services.UserService;
+import com.msc.ms.users.user.model.request.UserRequestDTO;
 import io.micrometer.core.annotation.Counted;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

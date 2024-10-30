@@ -1,14 +1,11 @@
-package com.msc.ms.users.user.model;
+package com.msc.ms.users.user.model.request;
 
-import com.msc.ms.users.user.validation.existing.location.ExistingLocation;
-import com.msc.ms.users.user.validation.existing.profile.ExistingProfile;
 import com.msc.ms.users.user.validation.unique.email.UniqueEmail;
 import com.msc.ms.users.user.validation.unique.phonenumber.UniquePhoneNumber;
 import com.msc.ms.users.user.validation.unique.username.UniqueUsername;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.util.Date;
 
 @Getter
@@ -16,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserRequestDTO implements Serializable {
+public class UserRegistryRequest {
     @NotEmpty(message = "Name is required")
     private String name;
     @NotEmpty(message = "Last name is required")
@@ -24,7 +21,7 @@ public class UserRequestDTO implements Serializable {
     @NotEmpty(message = "Middle name is required")
     private String middleName;
     @NotEmpty(message = "Phone number required")
-    @Pattern(regexp = "[0-9]{10,12}", message = "phone number format incorrect")
+    @Pattern(regexp = "\\d{10,12}", message = "phone number format incorrect")
     @UniquePhoneNumber
     private String phoneNumber;
     @NotEmpty(message = "Username is required")
@@ -39,16 +36,4 @@ public class UserRequestDTO implements Serializable {
     @Email(message = "Email format wrong")
     @UniqueEmail
     private String email;
-    @NotNull(message = "Location is required")
-    @ExistingLocation
-    private Integer idLocation;
-    @NotEmpty(message = "Street is required")
-    private String street;
-    @NotEmpty(message = "Number is required")
-    private String number;
-    @NotEmpty(message = "description is required")
-    private String description;
-    @NotNull(message = "Profile is required")
-    @ExistingProfile
-    private Integer idProfile;
 }

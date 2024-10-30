@@ -1,26 +1,34 @@
 package com.msc.ms.users.user;
 
-import com.msc.ms.users.address.AddressEntity;
+import base.BaseTestConfiguration;
 import com.msc.ms.users.user.model.UserEntity;
-import com.msc.ms.users.user.model.UserRequestDTO;
+import com.msc.ms.users.user.model.request.UserRegistryRequest;
+import com.msc.ms.users.user.services.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.text.ParseException;
 import java.util.Date;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @SpringBootTest
-@RunWith(SpringRunner.class)
+
+
 @Slf4j
-public class UserServiceTest {
-    @Autowired
-    private UserRepository userRepository;
+class UserServiceTest extends BaseTestConfiguration {
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -29,54 +37,59 @@ public class UserServiceTest {
     public UserServiceTest() {
     }
 
+
+    @Test
+    void registryUser() {
+        final var mRegistryRequest = UserRegistryRequest.builder()
+                .name("name")
+                .middleName("middleName")
+                .lastName("lastName")
+                .age(18)
+                .email("email@email.com")
+                .phoneNumber("525578303479")
+                .userName("userName")
+                .birthDate(new Date())
+                .build();
+        final var savedUser = this.userService.userRegistry(mRegistryRequest);
+        assertNotNull(savedUser.getIdUser());
+    }
+
+    @Test
+    @Sql(value = "classpath:scripts/uniqueUserCasesTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "classpath:scripts/uniqueUserCasesCleanTest.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void testErrorCaseForSPUniqueUsername() {
+        final var noExistingUser = "existingUsername";
+        assertFalse(this.userService.validUsername(noExistingUser));
+    }
+
+    @Test
+    void testSP() {
+        final var noExistingUser = "noExistingUser";
+        assertTrue(this.userService.validUsername(noExistingUser));
+    }
+
     @Test
     public void testMapper() throws ParseException {
-        final var requiredObject = UserRequestDTO.builder()
+        final var mRegistryRequest = UserRegistryRequest.builder()
+                .name("name")
+                .middleName("middleName")
+                .lastName("lastName")
                 .age(18)
-                .lastName("villafan")
-                .middleName("flores")
-                .name("alan")
-                .userName("loco25")
+                .email("email@email.com")
                 .phoneNumber("525578303479")
-                .email("alan.villafan@gmail.com")
+                .userName("userName")
                 .birthDate(new Date())
-                .description("porton azul")
-                .idProfile(1)
-                .idLocation(1)
-                .street("tehotihuacan")
-                .number("mz 2")
                 .build();
-        final var user = this.modelMapper.map(requiredObject, UserEntity.class);
-        final var address = this.modelMapper.map(requiredObject, AddressEntity.class);
-
-        Assert.assertNotNull(user);
+        final var user = this.modelMapper.map(mRegistryRequest, UserEntity.class);
+        assertEquals(mRegistryRequest.getName(), user.getName());
+        assertEquals(mRegistryRequest.getMiddleName(), user.getMiddleName());
+        assertEquals(mRegistryRequest.getLastName(), user.getLastName());
+        assertEquals(mRegistryRequest.getAge(), user.getAge());
+        assertEquals(mRegistryRequest.getEmail(), user.getEmail());
+        assertEquals(mRegistryRequest.getPhoneNumber(), user.getPhoneNumber());
+        assertEquals(mRegistryRequest.getUserName(), user.getUserName());
+        assertEquals(mRegistryRequest.getBirthDate(), user.getBirthDate());
     }
 
-    @Test
-    public void addTestUser() throws Exception {
-        final var requiredObject = UserRequestDTO.builder()
-                .age(18)
-                .lastName("villafan")
-                .middleName("flores")
-                .name("alan")
-                .userName("loco25")
-                .phoneNumber("525578303479")
-                .email("alan.villafan@gmail.com")
-                .birthDate(new Date())
-                .description("porton azul")
-                .idProfile(1)
-                .idLocation(1)
-                .street("tehotihuacan")
-                .number("mz 2")
-                .build();
-        final var response = this.userService.createUser(requiredObject);
-        Assert.assertNotNull(response.getIdUser());
-    }
 
-    @Test
-    public void searchUsername() {
-        final var username = "vifaAdmin";
-        final var count = userRepository.searchUsername(username);
-        Assert.assertEquals(1, (int) count);
-    }
 }

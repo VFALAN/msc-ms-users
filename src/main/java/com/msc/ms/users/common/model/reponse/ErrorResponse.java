@@ -1,9 +1,8 @@
-package com.msc.ms.users.common.model.dto;
+package com.msc.ms.users.common.model.reponse;
 
 import lombok.*;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 @Builder
