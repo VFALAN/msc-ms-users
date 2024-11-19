@@ -1,6 +1,7 @@
 package com.msc.ms.users.user;
 
 import base.BaseTestConfiguration;
+import com.msc.ms.users.crypto.CryptoService;
 import com.msc.ms.users.user.model.request.UserRegistryRequest;
 import com.msc.ms.users.user.services.UserService;
 import jakarta.validation.Validator;
@@ -25,6 +26,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,6 +45,8 @@ public class UserControllerTest extends BaseTestConfiguration {
     private MockMvc mockMvc;
     @Autowired
     private Validator validator;
+    @Autowired
+    private CryptoService cryptoService;
 
     @Test
     void testValidations() {
@@ -100,5 +104,23 @@ public class UserControllerTest extends BaseTestConfiguration {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
+    }
+
+    @Test
+    void testCrypto(){
+        List.of(
+                "msc-users", "msc-auth", "msc-address", "msc-file",
+                "msc-ui-web", "msc-process", "msc-notification", "msc-event",
+                "msc-registry", "msc-api-gateway", "msc-message", "msc-report",
+                "msc-geo", "msc-scheduler", "msc-configuration"
+        ).forEach(app->{
+            final String encrypted;
+            try {
+                encrypted = this.cryptoService.encrypt(app);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            log.info("app : {} ,encrypted: {}", app,encrypted);
+        });
     }
 }
