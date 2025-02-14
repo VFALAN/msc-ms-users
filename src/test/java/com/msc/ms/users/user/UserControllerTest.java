@@ -65,7 +65,7 @@ public class UserControllerTest extends BaseTestConfiguration {
                 .build();
         final var errors = this.validator.validate(mRegistryRequest);
         errors.forEach(error -> {
-            log.info("error in: {} due: {}", error.getInvalidValue().toString(), error.getMessage());
+            log.info("error in: {} due: {}", error.getPropertyPath().toString(), error.getMessage());
         });
         assert errors.isEmpty();
     }
