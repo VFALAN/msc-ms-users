@@ -61,6 +61,7 @@ public class UserControllerTest extends BaseTestConfiguration {
                 .email("email000000@email.com")
                 .phoneNumber("000000000000")
                 .userName("userName0000000")
+                .password("Hola123$")
                 .birthDate(new Date())
                 .build();
         final var errors = this.validator.validate(mRegistryRequest);
