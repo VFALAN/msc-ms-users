@@ -82,6 +82,7 @@ public class UserControllerTest extends BaseTestConfiguration {
                 .birthDate(new Date())
                 .build();
         final var errors = this.validator.validate(mRegistryRequest);
+        log.info("total errores: {}", errors.size());
         assert errors.size() == 3;
     }
 
@@ -108,20 +109,20 @@ public class UserControllerTest extends BaseTestConfiguration {
     }
 
     @Test
-    void testCrypto(){
+    void testCrypto() {
         List.of(
                 "msc-users", "msc-auth", "msc-address", "msc-file",
                 "msc-ui-web", "msc-process", "msc-notification", "msc-event",
                 "msc-registry", "msc-api-gateway", "msc-message", "msc-report",
                 "msc-geo", "msc-scheduler", "msc-configuration"
-        ).forEach(app->{
+        ).forEach(app -> {
             final String encrypted;
             try {
                 encrypted = this.cryptoService.encrypt(app);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            log.info("app : {} ,encrypted: {}", app,encrypted);
+            log.info("app : {} ,encrypted: {}", app, encrypted);
         });
     }
 }
