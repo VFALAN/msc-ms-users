@@ -35,6 +35,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
 @Slf4j
+@Sql(value = "classpath:scripts/uniqueUserCasesTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = "classpath:scripts/uniqueUserCasesCleanTest.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+
 public class UserControllerTest extends BaseTestConfiguration {
 
     @Value("${msc.security.own.key}")
@@ -68,8 +71,6 @@ public class UserControllerTest extends BaseTestConfiguration {
     }
 
     @Test
-    @Sql(value = "classpath:scripts/uniqueUserCasesTest.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "classpath:scripts/uniqueUserCasesCleanTest.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testFaillValidations() throws Exception {
         final var mRegistryRequest = UserRegistryRequest.builder()
                 .name("name")
