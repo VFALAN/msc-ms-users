@@ -1,1 +1,0 @@
-DELETE  FROM tuser where user_name = 'existingUsername@mail.com';

@@ -97,6 +97,7 @@ public class UserControllerTest extends BaseTestConfiguration {
                 .phoneNumber("525578303479")
                 .userName("userName")
                 .birthDate(new Date())
+                .password("Hola123$")
                 .build();
         this.mockMvc.perform(post("/api/users/v1/registry")
                         .header(this.header, this.key)

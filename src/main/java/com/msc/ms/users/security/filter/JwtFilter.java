@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private boolean validConsumer(String consumerEncrypted) {
         final var allowed = Arrays.stream(this.consumers).filter(c -> Objects.equals(c, consumerEncrypted)).toList();
-        return allowed.isEmpty();
+        return !allowed.isEmpty();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.msc.ms.users.user.model.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.msc.ms.users.user.validation.unique.email.UniqueEmail;
 import com.msc.ms.users.user.validation.unique.phonenumber.UniquePhoneNumber;
 import com.msc.ms.users.user.validation.unique.username.UniqueUsername;
@@ -36,4 +37,6 @@ public class UserRegistryRequest {
     @Email(message = "Email format wrong")
     @UniqueEmail
     private String email;
+    @NotBlank(message = "password is required")
+    private String password;
 }

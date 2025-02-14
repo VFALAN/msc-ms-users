@@ -23,7 +23,7 @@ public class SecurityConfiguration {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers("/actuator","/actuator/**")
+                                .requestMatchers("/actuator","/actuator/**","/ms-users/api/users/v1/registry","/api/users/v1/registry")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
