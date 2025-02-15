@@ -27,5 +27,14 @@ public class UserAdviceController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @Counted(value = "users.error.internal", description = "Error uncontrolled")
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handlerGeneralError(Exception e) {
+        log.error("Uncontrolled error : {}", e.getMessage());
+        final var response = ErrorResponse.builder().message(e.getMessage()).build();
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
 }
