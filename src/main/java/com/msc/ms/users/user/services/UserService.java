@@ -76,6 +76,7 @@ public class UserService {
         entity.setActive(IS_ACTIVE);
         entity.setDateCreate(new Date());
         final var savedEntity = userRepository.save(entity);
+        log.info("user registry success with id: {}", savedEntity.getIdUser());
         return modelMapper.map(savedEntity, UserRegistryResponse.class);
     }
 
