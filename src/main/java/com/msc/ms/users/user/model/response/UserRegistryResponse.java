@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 public class UserRegistryResponse {
     private Integer idUser;
-    private String username;
+    private String userName;
     private String email;
 }

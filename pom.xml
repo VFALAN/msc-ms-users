@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.msc.ms.users</groupId>
 	<artifactId>msc-ms-users</artifactId>
-	<version>0.0.1-Beta</version>
+	<version>0.0.3-Beta</version>
 	<name>msc-ms-users</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
