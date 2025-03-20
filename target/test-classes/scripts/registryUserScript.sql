@@ -1,0 +1,1 @@
+insert into tprofile(active,key_profile,name)values (b'1','CS','Candidate');

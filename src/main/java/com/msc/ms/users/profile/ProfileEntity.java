@@ -20,7 +20,7 @@ public class ProfileEntity extends AuditEntity {
     @Column(name = "NAME")
     private String name;
     @Column(name = "KEY_PROFILE")
-    private String key;
+    private String keyProfile;
     @OneToMany(mappedBy = "profile")
     private List<UserEntity> userEntityList;
 }

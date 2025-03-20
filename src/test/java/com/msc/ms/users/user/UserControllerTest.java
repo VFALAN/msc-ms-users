@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(value = "classpath:scripts/uniqueUserCasesCleanTest.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 
 public class UserControllerTest extends BaseTestConfiguration {
-
+private static final String WEB_UI_KEY = "LBoo0QV9SCPSiMEtcYqO4Q==";
     @Value("${msc.security.own.key}")
     private String key;
     @Value("${msc.security.header}")
@@ -90,6 +90,7 @@ public class UserControllerTest extends BaseTestConfiguration {
     }
 
     @Test
+    @Sql(value = "classpath:/scripts/registryUserScript.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void testRegistryUser() throws Exception {
         final var mObjectMapper = new ObjectMapper();
         final var mRegistryRequest = UserRegistryRequest.builder()
@@ -103,8 +104,8 @@ public class UserControllerTest extends BaseTestConfiguration {
                 .birthDate(new Date())
                 .password("Hola123$")
                 .build();
-        this.mockMvc.perform(post("/api/users/v1/registry")
-                        .header(this.header, this.key)
+        this.mockMvc.perform(post("/api/users/student/v1/registry")
+                        .header(this.header, WEB_UI_KEY)
                         .content(mObjectMapper.writeValueAsString(mRegistryRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -117,7 +118,7 @@ public class UserControllerTest extends BaseTestConfiguration {
                 "msc-users", "msc-auth", "msc-address", "msc-file",
                 "msc-ui-web", "msc-process", "msc-notification", "msc-event",
                 "msc-registry", "msc-api-gateway", "msc-message", "msc-report",
-                "msc-geo", "msc-scheduler", "msc-configuration"
+                "msc-geo", "msc-scheduler", "msc-configuration","Hola123$"
         ).forEach(app -> {
             final String encrypted;
             try {

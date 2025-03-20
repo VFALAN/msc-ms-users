@@ -31,7 +31,7 @@ public class UserController {
 
 
 
-    @PostMapping("/v1/registry")
+    @PostMapping("/student/v1/registry")
     ResponseEntity<UserRegistryResponse> registry(@Valid @RequestBody UserRegistryRequest pUserRequestDTO) throws Exception {
         final var response = userService.userRegistry(pUserRequestDTO);
         return ResponseEntity.ok(response);

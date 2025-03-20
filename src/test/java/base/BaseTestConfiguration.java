@@ -3,10 +3,14 @@ package base;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -29,11 +33,15 @@ public abstract class BaseTestConfiguration {
                 new DockerComposeContainer(
                         new File("src/test/resources/docker-compose.yaml")
                 ).withExposedService("db", DEFAULT_PORT_MYSQL, Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)))
-
+                        .withExposedService("msc-registry-server", 8761)
                         .withExposedService("rabbitmq", DEFAULT_PORT_RABBIT_MQ_CLIENT)
                         .withExposedService("rabbitmq", DEFAULT_PORT_RABBIT_MQ_API)
+                        .withExposedService("msc-api-gateway", 8079)
+                        .withExposedService("msc-auth", 8180)
                         .waitingFor("rabbitmq", Wait.forHttp("/").forPort(DEFAULT_PORT_RABBIT_MQ_API))
-                        .withExposedService("loki", DEFAULT_LOKI_PORT);
+                        .withExposedService("loki", DEFAULT_LOKI_PORT)
+                        .withPull(true);
+        enviroment.withLogConsumer("msc-auth", new Slf4jLogConsumer(LoggerFactory.getLogger("msc")));
         enviroment.start();
     }
 
@@ -54,8 +62,18 @@ public abstract class BaseTestConfiguration {
         final var lokiPort = enviroment.getServicePort("loki", DEFAULT_LOKI_PORT);
         final var lokiHost = enviroment.getServiceHost("loki", DEFAULT_LOKI_PORT);
         final var lokiUrl = "http://" + lokiHost + ":" + lokiPort + "/loki/api/v1/push";
-        log.info("@configuration -> loki connnection lokiUrl :{}", lokiUrl);
+        final var eurekaServerHost = enviroment.getServiceHost("msc-registry-server", 8761);
+        final var eurekaServerPort = enviroment.getServicePort("msc-registry-server", 8761);
+        log.debug("@configuration -> eureka server host: {} port: {}", eurekaServerHost, eurekaServerPort);
+        log.info("@configuration -> loki connection lokiUrl :{}", lokiUrl);
+        //msc.services.authentication.url=http://localhost:7180/authentication/api
+        final var apiGatewayHost = enviroment.getServiceHost("msc-api-gateway", 8079);
+        final var apiGatewayPort = enviroment.getServicePort("msc-api-gateway", 8079);
+
         //spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+        //eureka.client.service-url.defaultZone: http://localhost:8761/eureka/
+        registry.add("eureka.client.service-url.defaultZone", () -> "http://" + eurekaServerHost + ":" + eurekaServerPort + "/eureka/");
+        registry.add("msc.services.authentication.url", () -> "http://" + apiGatewayHost + ":" + apiGatewayPort + "/authentication/api");
         registry.add("loki.url", () -> lokiUrl);
         registry.add("spring.rabbitmq.username", () -> rabbitUsername);
         registry.add("spring.rabbitmq.password", () -> rabbitPassword);
@@ -73,6 +91,13 @@ public abstract class BaseTestConfiguration {
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("loki.enabled", () -> "false");
         registry.add("loki.url", () -> "http://localhost:3100/loki/api/v1/push");
+        enviroment.withLogConsumer("msc-auth", new Slf4jLogConsumer(LoggerFactory.getLogger("msc")));
+        final var mOptionalService = enviroment.getContainerByServiceName("msc-auth");
+        if (mOptionalService.isPresent()) {
+            final var service = (ContainerState) mOptionalService.get();
+            final var authLogs = service.getLogs();
+            log.info(authLogs);
+        }
     }
 
 }

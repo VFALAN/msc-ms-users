@@ -35,7 +35,7 @@ class UserServiceTest extends BaseTestConfiguration {
 
 
     @Test
-    void registryUser() {
+    void registryUser() throws Exception {
         final var mRegistryRequest = UserRegistryRequest.builder()
                 .name("name")
                 .middleName("middleName")
@@ -44,6 +44,7 @@ class UserServiceTest extends BaseTestConfiguration {
                 .email("email@email.com")
                 .phoneNumber("525578303479")
                 .userName("userName")
+                .password("Hola123$")
                 .birthDate(new Date())
                 .build();
         final var savedUser = this.userService.userRegistry(mRegistryRequest);

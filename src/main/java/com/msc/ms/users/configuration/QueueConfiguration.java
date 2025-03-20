@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class QueueConfiguration {
-    @Value("#{'${mac.queues}'.split(',')}")
+    @Value("#{'${msc.queues}'.split(',')}")
     private List<String> queues;
     private final RabbitAdmin rabbitAdmin;
 

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.msc.ms.users</groupId>
 	<artifactId>msc-ms-users</artifactId>
-	<version>0.0.3-Beta</version>
+	<version>0.0.4-Beta</version>
 	<name>msc-ms-users</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -107,8 +107,8 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<version>1.20.6</version>
 			<scope>test</scope>
-
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

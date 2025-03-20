@@ -1,8 +1,10 @@
 package com.msc.ms.users.user.services;
 
 import com.msc.ms.users.address.AddressEntity;
-import com.msc.ms.users.address.AddressService;
 import com.msc.ms.users.authentication.IAuthenticationService;
+import com.msc.ms.users.authentication.model.LogPassHistoryRequest;
+import com.msc.ms.users.authentication.model.LogPasswordResponse;
+import com.msc.ms.users.crypto.CryptoService;
 import com.msc.ms.users.location.ILocationService;
 import com.msc.ms.users.location.LocationResponse;
 import com.msc.ms.users.minio.IMinioService;
@@ -17,17 +19,16 @@ import com.msc.ms.users.user.model.response.UserRegistryResponse;
 import com.msc.ms.users.user.model.response.UserResponseDTO;
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -43,7 +44,7 @@ public class UserService {
             final ILogPassRepository pILogPassRepository,
             final PasswordEncoder pPasswordEncoder,
             final IMinioService pIMinioService,
-            @Value("${msc.security.own.key}") final String pKEY
+            final CryptoService pCryptoService
     ) {
         userRepository = pUserRepository;
         profileService = pProfileService;
@@ -53,12 +54,12 @@ public class UserService {
         iLogPassRepository = pILogPassRepository;
         passwordEncoder = pPasswordEncoder;
         iMinioService = pIMinioService;
-
+        cryptoService = pCryptoService;
     }
 
     private static final boolean IS_ACTIVE = true;
+    private static final String CANDIDATE_STUDENT_KEY = "CS";
     private final UserRepository userRepository;
-
     private final ProfileService profileService;
     private final ILocationService iLocationService;
     private final ModelMapper modelMapper;
@@ -66,19 +67,40 @@ public class UserService {
     private final ILogPassRepository iLogPassRepository;
     private final PasswordEncoder passwordEncoder;
     private final IMinioService iMinioService;
-    @Value("${msc.security.own.key}")
-    private static String KEY;
+    private final CryptoService cryptoService;
+
 
     @Counted(value = "user.registry")
     @Timed(value = "user.registry")
-    public UserRegistryResponse userRegistry(UserRegistryRequest pRequest) {
+    public UserRegistryResponse userRegistry(UserRegistryRequest pRequest) throws Exception {
         final var entity = modelMapper.map(pRequest, UserEntity.class);
         entity.setActive(IS_ACTIVE);
         entity.setDateCreate(new Date());
+        final var mCandidateProfileEntity = profileService.findByKey(CANDIDATE_STUDENT_KEY);
+        entity.setProfile(mCandidateProfileEntity);
         final var savedEntity = userRepository.save(entity);
         log.info("user registry success with id: {}", savedEntity.getIdUser());
-        return modelMapper.map(savedEntity, UserRegistryResponse.class);
+        final var encryptedPassword = cryptoService.encrypt(pRequest.getPassword());
+        final var response = modelMapper.map(savedEntity, UserRegistryResponse.class);
+        ResponseEntity<LogPasswordResponse> logResponse = iAuthenticationService.getLogPassword(
+                LogPassHistoryRequest
+                        .builder()
+                        .password(encryptedPassword)
+                        .idUser(savedEntity.getIdUser())
+                        .build()
+        );
+        if (logResponse.getStatusCode() == HttpStatus.OK && logResponse.getBody() != null) {
+            //  final var body = modelMapper.map(logResponse.getBody(), LogPasswordResponse.class);
+            final var body = logResponse.getBody();
+            response.setExpirationDate(body.getExpirationDate());
+            return response;
+        } else {
+            log.error("Error during the a call to ms-auth to get the password log history for user: {}", entity.getIdUser());
+            throw new Exception("Password Log history creation error");
+        }
+
     }
+
 
     //! TODO remove unefficent method
 
